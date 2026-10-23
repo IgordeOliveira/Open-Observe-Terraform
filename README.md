@@ -29,14 +29,23 @@ terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
-Se o Terraform não enxergar o login feito com `aws login`, exporte as credenciais:
+### Credenciais com `aws login`
+
+O provider AWS 5.x não lê o `login_session` criado pelo `aws login`. Crie um perfil que delega para a CLI via `credential_process` em `~/.aws/config`:
+
+```ini
+[profile terraform]
+credential_process = aws configure export-credentials --profile default --format process
+region = us-east-2
+```
+
+E use-o antes de rodar o Terraform:
 
 ```powershell
-$c = aws configure export-credentials --format process | ConvertFrom-Json
-$env:AWS_ACCESS_KEY_ID = $c.AccessKeyId
-$env:AWS_SECRET_ACCESS_KEY = $c.SecretAccessKey
-$env:AWS_SESSION_TOKEN = $c.SessionToken
+$env:AWS_PROFILE = "terraform"
 ```
+
+O perfil precisa ser separado do `default`; senão a CLI chama a si mesma em loop.
 
 Depois do `apply`:
 
