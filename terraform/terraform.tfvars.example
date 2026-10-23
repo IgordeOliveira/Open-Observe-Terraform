@@ -1,0 +1,10 @@
+root_user_email = "voce@exemplo.com"
+
+# Opcional: HTTPS público via Caddy (crie o registro A para o IP de saída "public_ip")
+# domain = "logs.exemplo.com"
+
+# Opcional: liberar a porta 5080 para o seu IP
+# allowed_cidrs = ["203.0.113.10/32"]
+
+# Fixe uma versão em vez de "latest"
+# openobserve_version = "v0.14.0"

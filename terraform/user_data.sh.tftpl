@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /data /opt/openobserve
+PASSWORD=$(aws ssm get-parameter --region ${region} --name ${password_param} \
+  --with-decryption --query Parameter.Value --output text)
+
+cat > /opt/openobserve/env <<EOF
+ZO_ROOT_USER_EMAIL=${root_email}
+ZO_ROOT_USER_PASSWORD=$PASSWORD
+ZO_DATA_DIR=/data
+ZO_LOCAL_MODE=true
+ZO_LOCAL_MODE_STORAGE=s3
+ZO_S3_PROVIDER=aws
+ZO_S3_BUCKET_NAME=${bucket}
+ZO_S3_REGION_NAME=${region}
+ZO_S3_SERVER_URL=https://s3.${region}.amazonaws.com
+ZO_S3_FEATURE_FORCE_HOSTED_STYLE=false
+EOF
+chmod 600 /opt/openobserve/env
+
+docker rm -f openobserve 2>/dev/null || true
+docker run -d --name openobserve --restart unless-stopped \
+  --env-file /opt/openobserve/env \
+  -v /data:/data \
+  -p 5080:5080 \
+  public.ecr.aws/zinclabs/openobserve:${openobserve_version}
+
+%{ if domain != "" ~}
+cat > /opt/openobserve/Caddyfile <<EOF
+${domain} {
+  reverse_proxy 127.0.0.1:5080
+}
+EOF
+
+docker rm -f caddy 2>/dev/null || true
+docker run -d --name caddy --restart unless-stopped --network host \
+  -v /opt/openobserve/Caddyfile:/etc/caddy/Caddyfile:ro \
+  -v caddy_data:/data \
+  caddy:2
+%{ endif ~}
