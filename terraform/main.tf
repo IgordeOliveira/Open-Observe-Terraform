@@ -78,9 +78,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "data" {
 
 # ---------------------------------------------------------------- Senha root
 
+# O OpenObserve exige minúscula, maiúscula, dígito e caractere especial.
+# Os especiais evitam $, aspas, barras, # e = (quebram o heredoc / env-file).
 resource "random_password" "root" {
-  length  = 24
-  special = false
+  length           = 24
+  special          = true
+  override_special = "-_.@%+*!"
+  min_lower        = 1
+  min_upper        = 1
+  min_numeric      = 1
+  min_special      = 1
 }
 
 resource "aws_ssm_parameter" "root_password" {
