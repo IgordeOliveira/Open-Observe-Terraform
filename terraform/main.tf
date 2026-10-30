@@ -157,6 +157,10 @@ resource "aws_security_group" "instance" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "${local.name}-sg"
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "direct" {
@@ -222,6 +226,15 @@ resource "aws_instance" "this" {
   tags = {
     Name = local.name
   }
+  volume_tags = {
+    Name = "${local.name}-root"
+  }
+
+  # A AMI vem do parâmetro SSM "latest"; sem isto, cada AMI nova recriaria a
+  # instância e apagaria o disco raiz (metadados e WAL do OpenObserve).
+  lifecycle {
+    ignore_changes = [ami]
+  }
 
   depends_on = [aws_ssm_parameter.root_password]
 }
@@ -229,6 +242,10 @@ resource "aws_instance" "this" {
 resource "aws_eip" "this" {
   instance = aws_instance.this.id
   domain   = "vpc"
+
+  tags = {
+    Name = "${local.name}-eip"
+  }
 }
 
 # ---------------------------------------------------------------- Backup do EBS (metadados SQLite)
@@ -257,6 +274,10 @@ resource "aws_dlm_lifecycle_policy" "snapshots" {
   description        = "Daily snapshot of the OpenObserve disk"
   execution_role_arn = aws_iam_role.dlm.arn
   state              = "ENABLED"
+
+  tags = {
+    Name = "${local.name}-snapshots"
+  }
 
   policy_details {
     resource_types = ["INSTANCE"]
