@@ -5,9 +5,9 @@ variable "region" {
 }
 
 variable "instance_type" {
-  description = "Tipo da EC2 (Graviton). t4g.medium = 2 vCPU / 4 GB, sobra para <1 GB/dia de logs."
+  description = "Tipo da EC2 (Graviton). t4g.small = 2 vCPU / 2 GB, suficiente para <1 GB/dia de logs. Se houver OOM, volte para t4g.medium."
   type        = string
-  default     = "t4g.medium"
+  default     = "t4g.small"
 }
 
 variable "data_volume_size_gb" {

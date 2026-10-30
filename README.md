@@ -4,7 +4,7 @@ Infraestrutura (Terraform) para rodar o [OpenObserve](https://openobserve.ai/) e
 
 ## Arquitetura
 
-- **EC2 `t4g.medium`** (Graviton, Amazon Linux 2023) rodando o OpenObserve em Docker.
+- **EC2 `t4g.small`** (Graviton, Amazon Linux 2023) rodando o OpenObserve em Docker.
 - **Caddy** na mesma instância, com HTTPS automático (Let's Encrypt) para o domínio configurado.
 - **S3** como armazenamento dos dados (Parquet), privado e criptografado.
   - 30 dias no S3 Standard, depois **Glacier Instant Retrieval** (barato e ainda consultável).
@@ -61,7 +61,7 @@ Sem domínio, deixe `domain` vazio e use o comando do output `ssm_port_forward_c
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `region` | `us-east-2` | Região AWS |
-| `instance_type` | `t4g.medium` | Tipo da EC2 |
+| `instance_type` | `t4g.small` | Tipo da EC2 |
 | `root_user_email` | (obrigatória) | Usuário root do OpenObserve |
 | `domain` | `""` | Domínio para HTTPS; vazio = só SSM |
 | `allowed_cidrs` | `[]` | CIDRs com acesso direto à porta 5080 |
